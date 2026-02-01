@@ -116,7 +116,7 @@ const Watch = () => {
   };
 
   return (
-    <div className="relative h-screen w-screen bg-black text-white">
+    <div className="h-screen w-screen bg-black">
       <Link
         to="/"
         className="absolute top-4 left-4 z-50 flex items-center space-x-2 text-white hover:text-brand-red transition-colors"
@@ -124,30 +124,8 @@ const Watch = () => {
         <ArrowLeftIcon className="h-8 w-8" />
         <span className="font-bold">Back to Home</span>
       </Link>
-      <div className="relative h-2/3 md:h-3/4 lg:h-4/5 w-full">
+      <div className="h-full w-full">
         {renderVideoPlayer()}
-      </div>
-
-      <div
-        className="relative w-full p-4 md:p-8 bg-cover bg-center"
-        style={{ backgroundImage: `url(${movie.thumbnail})` }}
-      >
-        <div className="absolute inset-0  from-black via-black/70 to-transparent"></div>
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">{movie.title}</h1>
-          <p className="text-lg text-gray-300 mb-6">{movie.description}</p>
-          <div className="flex flex-wrap gap-2">
-            <span className="bg-brand-red text-white text-sm font-semibold px-3 py-1 rounded-full">
-              {movie.genre}
-            </span>
-            <span className="bg-gray-700 text-white text-sm font-semibold px-3 py-1 rounded-full">
-              {movie.language}
-            </span>
-            <span className="bg-gray-700 text-white text-sm font-semibold px-3 py-1 rounded-full">
-              {new Date(movie.createdAt).getFullYear()}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );

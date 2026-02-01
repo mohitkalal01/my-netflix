@@ -81,6 +81,7 @@ const TvShows = () => {
       {featuredShow && <Hero movie={featuredShow} />}
 
       {/* CATEGORY ROWS */}
+      <div className="relative z-10 -mt-32 space-y-12 pb-24">
       {crimeShows.length > 0 && (
         <MovieRow title="Crime Shows" movies={crimeShows} />
       )}
@@ -92,6 +93,7 @@ const TvShows = () => {
       {englishTvShows.length > 0 && (
         <MovieRow title="English TV Shows" movies={englishTvShows} />
       )}
+      </div>
     </div>
   );
 };

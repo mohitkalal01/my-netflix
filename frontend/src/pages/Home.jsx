@@ -79,7 +79,7 @@ const Home = () => {
   return (
     <div className="overflow-x-hidden">
       <Hero movie={featuredMovie} />
-      <div className="px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 -mt-32 space-y-12 pb-24 px-4 sm:px-6 lg:px-8">
         {user && <ContinueWatchingRow />}
         <MovieRow title="Comedy Movies" movies={comedyMovies} />
         <MovieRow title="Horror Movies" movies={horrorMovies} />
