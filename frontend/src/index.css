@@ -1,0 +1,17 @@
+@import url('https://font.googleapis.com/css2?family=Netflix+Sans:wght@300;400;500;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-red: #E50914;
+  --color-brand-black: #141414;
+  --color-brand-dark: #181818;
+  --color-brand-light: #F5F5F1;
+  --color-brand-gray: #808080;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-black text-brand-light;
+  }
+}
