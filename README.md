@@ -53,4 +53,3 @@ The backend will start on port 5000.
 ## Author
 
 **Mohit Kalal** - [GitHub](https://github.com/mohitkalal01)
-
