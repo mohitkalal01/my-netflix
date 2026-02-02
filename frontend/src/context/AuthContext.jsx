@@ -1,28 +1,34 @@
-import { createContext, useState, useEffect, useMemo, useContext } from "react";
+import { createContext, useState, useEffect, useCallback, useContext } from "react";
 import api from "../services/api";
+import { getMyList, addToMyList, removeFromMyList } from "../services/userApi";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [myList, setMyList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
-        try {
-          const { data } = await api.get("/users/me");
-          setUser(data);
-        } catch (error) {
-          logout();
-        }
+  const fetchUserData = useCallback(async () => {
+    if (token) {
+      try {
+        const [userData, listData] = await Promise.all([
+          api.get("/users/me"),
+          getMyList(),
+        ]);
+        setUser(userData.data);
+        setMyList(listData);
+      } catch (error) {
+        logout();
       }
-      setLoading(false);
-    };
-
-    fetchUser();
+    }
+    setLoading(false);
   }, [token]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   const login = (newToken) => {
     localStorage.setItem("token", newToken);
@@ -33,10 +39,43 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    setMyList([]);
   };
 
-  useMemo(() => {
-    api.interceptors.response.use(
+  const addToMyListContext = async (movie) => {
+    // Optimistic update using the full movie object
+    setMyList(prevList => [...prevList, movie]);
+
+    try {
+      const updatedList = await addToMyList(movie._id);
+      // Replace the optimistic list with the confirmed list from the server
+      setMyList(updatedList);
+    } catch (error) {
+      // Revert on error by removing the movie that was added optimistically
+      setMyList(prevList => prevList.filter(m => m._id !== movie._id));
+      console.error("Failed to add to list:", error);
+    }
+  };
+
+  const removeFromMyListContext = async (movieId) => {
+    const originalList = [...myList];
+    
+    // Optimistic update
+    setMyList(prevList => prevList.filter(m => m._id !== movieId));
+    
+    try {
+      const updatedList = await removeFromMyList(movieId);
+      setMyList(updatedList); // Update with the actual list from the server
+    } catch (error) {
+      // Revert on error
+      setMyList(originalList);
+      console.error("Failed to remove from list:", error);
+    }
+  };
+  
+  // Set up interceptor
+  useEffect(() => {
+    const responseInterceptor = api.interceptors.response.use(
       (response) => response,
       (error) => {
         if (error.response?.status === 401) {
@@ -45,16 +84,19 @@ export const AuthProvider = ({ children }) => {
         return Promise.reject(error);
       }
     );
+
+    return () => {
+      api.interceptors.response.eject(responseInterceptor);
+    };
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, loading, myList, addToMyListContext, removeFromMyListContext }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-/* ✅ ADD THIS HOOK */
 export const useAuth = () => {
   return useContext(AuthContext);
 };

@@ -28,6 +28,7 @@ exports.register = asyncHandler(async (req, res) => {
 });
 
 exports.login = asyncHandler(async (req, res) => {
+  console.log("Login request body:", req.body);
   const { email, password } = req.body;
 
   const user = await User.findOne({ email }).select("+password");
@@ -35,13 +36,11 @@ exports.login = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Invalid credentials");
   }
-
   const match = await bcrypt.compare(password, user.password);
   if (!match) {
     res.status(400);
     throw new Error("Invalid credentials");
   }
-
   const token = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,

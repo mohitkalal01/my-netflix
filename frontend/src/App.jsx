@@ -17,6 +17,8 @@ import Admin from "./pages/Admin";
 import Watch from "./pages/Watch";
 import TvShows from "./pages/TvShows";
 import Movies from "./pages/Movies";
+import MovieDetail from "./pages/MovieDetail";
+import MyList from "./pages/MyList";
 import Profile from "./pages/Profile";
 import SearchResults from "./pages/SearchResults";
 import ProfileSelector from "./pages/ProfileSelector"; // Import ProfileSelector
@@ -74,6 +76,26 @@ export default function App() {
             <ProtectedRoute>
               <MainLayout>
                 <PageWrapper><Movies /></PageWrapper>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/movies/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <PageWrapper><MovieDetail /></PageWrapper>
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-list"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <PageWrapper><MyList /></PageWrapper>
               </MainLayout>
             </ProtectedRoute>
           }

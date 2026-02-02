@@ -42,3 +42,64 @@ exports.getContinueWatching = asyncHandler(async (req, res) => {
   res.json(history);
 });
 
+// @desc    Get user's list
+// @route   GET /api/users/my-list
+// @access  Private
+exports.getMyList = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id).populate({
+    path: 'myList',
+    model: 'Movie'
+  });
+  if (user) {
+    res.json(user.myList);
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+// @desc    Add movie to user's list
+// @route   POST /api/users/my-list
+// @access  Private
+exports.addToMyList = asyncHandler(async (req, res) => {
+  const { movieId } = req.body;
+  const user = await User.findById(req.user.id);
+
+  if (user.myList.includes(movieId)) {
+    res.status(400);
+    throw new Error("Movie already in list");
+  }
+
+  user.myList.push(movieId);
+  await user.save();
+  
+  const updatedUser = await User.findById(req.user.id).populate({
+    path: 'myList',
+    model: 'Movie'
+  });
+
+  res.status(201).json(updatedUser.myList);
+});
+
+// @desc    Remove movie from user's list
+// @route   DELETE /api/users/my-list/:movieId
+// @access  Private
+exports.removeFromMyList = asyncHandler(async (req, res) => {
+  const { movieId } = req.params;
+  const user = await User.findById(req.user.id);
+
+  if (!user.myList.includes(movieId)) {
+    res.status(400);
+    throw new Error("Movie not in list");
+  }
+
+  user.myList = user.myList.filter((id) => id.toString() !== movieId);
+  await user.save();
+  
+  const updatedUser = await User.findById(req.user.id).populate({
+    path: 'myList',
+    model: 'Movie'
+  });
+
+  res.json(updatedUser.myList);
+});

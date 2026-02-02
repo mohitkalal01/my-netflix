@@ -49,6 +49,8 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'TV Shows', path: '/tv-shows' },
     { name: 'Movies', path: '/movies' },
+    // Conditionally add My List for logged-in users
+    ...(user ? [{ name: 'My List', path: '/my-list' }] : []),
   ];
 
   return (

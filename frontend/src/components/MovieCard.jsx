@@ -1,24 +1,44 @@
-import { Link } from "react-router-dom";
-import { PlayIcon, PlusIcon, HandThumbUpIcon } from "@heroicons/react/24/solid";
+import { useNavigate } from "react-router-dom";
+import { PlayIcon, PlusIcon, CheckIcon, HandThumbUpIcon } from "@heroicons/react/24/solid";
+import { useAuth } from "../context/AuthContext";
 
 const MovieCard = ({ movie, progress }) => {
+  const navigate = useNavigate();
+  const { myList, addToMyListContext, removeFromMyListContext } = useAuth();
+
+  const isMovieInList = myList.some((item) => item._id === movie._id);
+
   const progressPercentage = progress
     ? (progress.currentTime / progress.duration) * 100
     : 0;
 
-  const handleButtonClick = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    // Here you would typically dispatch an action, e.g., to add to a list.
-    // For now, it just prevents the link from navigating.
-    console.log("Button clicked, navigation prevented.");
+  const handleCardClick = () => {
+    navigate(`/movies/${movie._id}`);
   };
 
+  const handlePlayClick = (e) => {
+    e.stopPropagation();
+    navigate(`/watch/${movie._id}`, { state: { resumeTime: progress?.currentTime } });
+  };
+
+  const handleMyListToggle = (e) => {
+    e.stopPropagation();
+    if (isMovieInList) {
+      removeFromMyListContext(movie._id);
+    } else {
+      addToMyListContext(movie);
+    }
+  };
+
+  const handleLikeClick = (e) => {
+    e.stopPropagation();
+    console.log("Like button clicked");
+  }
+
   return (
-    <Link
-      to={`/watch/${movie._id}`}
-      state={{ resumeTime: progress?.currentTime }}
-      className="group relative block w-40 md:w-48 lg:w-56 flex-shrink-0 aspect-[2/3] rounded-md overflow-hidden transition-transform duration-300 ease-in-out z-10 hover:scale-105 hover:z-20"
+    <div
+      onClick={handleCardClick}
+      className="group relative block w-40 md:w-48 lg:w-56 flex-shrink-0 aspect-[2/3] rounded-md overflow-hidden transition-transform duration-300 ease-in-out z-10 hover:scale-105 hover:z-20 cursor-pointer"
     >
       {/* --- BASE CARD CONTENT (Always visible) --- */}
       <img
@@ -35,7 +55,7 @@ const MovieCard = ({ movie, progress }) => {
         </div>
       )}
 
-      {/* --- HOVER OVERLAY (Desktop only, click-through) --- */}
+      {/* --- HOVER OVERLAY --- */}
       <div
         className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
       >
@@ -43,25 +63,24 @@ const MovieCard = ({ movie, progress }) => {
           <h3 className="text-white text-base font-bold truncate">{movie.title}</h3>
           <div className="flex items-center space-x-2 mt-3">
             {/* Play Button */}
-            <Link 
-              to={`/watch/${movie._id}`} 
-              onClick={handleButtonClick} 
+            <button
+              onClick={handlePlayClick}
               className="h-9 w-9 flex items-center justify-center rounded-full bg-white text-black pointer-events-auto hover:bg-gray-200 transition-colors"
             >
               <PlayIcon className="h-5 w-5" />
-            </Link>
+            </button>
             
             {/* Add to List Button */}
             <button
-              onClick={handleButtonClick}
+              onClick={handleMyListToggle}
               className="h-9 w-9 flex items-center justify-center rounded-full border-2 border-gray-400 text-white pointer-events-auto hover:border-white transition-colors"
             >
-              <PlusIcon className="h-5 w-5" />
+              {isMovieInList ? <CheckIcon className="h-5 w-5" /> : <PlusIcon className="h-5 w-5" />}
             </button>
 
             {/* Like Button */}
             <button
-              onClick={handleButtonClick}
+              onClick={handleLikeClick}
               className="h-9 w-9 flex items-center justify-center rounded-full border-2 border-gray-400 text-white pointer-events-auto hover:border-white transition-colors"
             >
               <HandThumbUpIcon className="h-5 w-5" />
@@ -69,7 +88,7 @@ const MovieCard = ({ movie, progress }) => {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

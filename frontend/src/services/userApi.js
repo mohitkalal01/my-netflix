@@ -12,3 +12,18 @@ export const updateWatchProgress = async (movieId, currentTime, duration) => {
     duration,
   });
 };
+
+export const getMyList = async () => {
+  const response = await api.get("/users/my-list");
+  return response.data;
+};
+
+export const addToMyList = async (movieId) => {
+  const response = await api.post("/users/my-list", { movieId });
+  return response.data;
+};
+
+export const removeFromMyList = async (movieId) => {
+  const response = await api.delete(`/users/my-list/${movieId}`);
+  return response.data;
+};
