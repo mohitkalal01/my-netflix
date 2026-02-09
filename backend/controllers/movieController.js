@@ -1,112 +1,108 @@
-const Movie = require("../models/Movie");
-const cloudinary = require("../config/cloudinary");
-const fs = require("fs");
-const asyncHandler = require("express-async-handler");
+const Movie = require('../models/Movie');
+const WatchHistory = require('../models/WatchHistory');
+const asyncHandler = require('express-async-handler');
 
-// GET ALL MOVIES
-exports.getAllMovies = asyncHandler(async (req, res) => {
-  const movies = await Movie.find();
+// @desc    Fetch all movies
+// @route   GET /api/movies
+// @access  Public
+const getMovies = asyncHandler(async (req, res) => {
+  const movies = await Movie.find({});
   res.json(movies);
 });
 
-// GET MOVIE BY ID
-exports.getMovieById = asyncHandler(async (req, res) => {
+// @desc    Fetch single movie by ID
+// @route   GET /api/movies/:id
+// @access  Public
+const getMovieById = asyncHandler(async (req, res) => {
   const movie = await Movie.findById(req.params.id);
-  if (!movie) {
+
+  if (movie) {
+    res.json(movie);
+  } else {
     res.status(404);
-    throw new Error("Movie not found");
+    throw new Error('Movie not found');
   }
-  res.json(movie);
 });
 
-// GET TRENDING MOVIES
-exports.getTrendingMovies = asyncHandler(async (req, res) => {
-  const movies = await Movie.find({ isTrending: true });
-  res.json(movies);
+// @desc    Create a movie
+// @route   POST /api/movies
+// @access  Private/Admin
+const createMovie = asyncHandler(async (req, res) => {
+    const { title, description, posterUrl, videoUrl, genre, duration, year, isSeries } = req.body;
+
+    const movie = new Movie({
+        title,
+        description,
+        posterUrl,
+        videoUrl,
+        genre,
+        duration,
+        year,
+        isSeries,
+    });
+
+    const createdMovie = await movie.save();
+    res.status(201).json(createdMovie);
 });
 
-// GET FEATURED MOVIE (BANNER)
-exports.getFeaturedMovie = asyncHandler(async (req, res) => {
-  const movie = await Movie.findOne({ isFeatured: true });
-  res.json(movie);
-});
 
-// GET MOVIES BY CATEGORY / LANGUAGE
-exports.getMoviesByFilter = asyncHandler(async (req, res) => {
-  const { category, language } = req.query;
+// @desc    Update a movie
+// @route   PUT /api/movies/:id
+// @access  Private/Admin
+const updateMovie = asyncHandler(async (req, res) => {
+  const { title, description, posterUrl, videoUrl, genre, duration, year, isSeries } = req.body;
 
-  const filter = {};
-  if (category) filter.category = category;
-  if (language) filter.language = language;
-
-  const movies = await Movie.find(filter);
-  res.json(movies);
-});
-
-// ADD MOVIE (ADMIN)
-exports.addMovie = asyncHandler(async (req, res) => {
-  const { title, description, category, language, genre, isTrending, isFeatured } =
-    req.body;
-
-  // Check if files are uploaded
-  if (!req.files || !req.files.thumbnail || !req.files.video) {
-    res.status(400);
-    throw new Error("Thumbnail and Video are required");
-  }
-
-  const thumbnailFile = req.files.thumbnail[0];
-  const videoFile = req.files.video[0];
-
-  // Upload Thumbnail to Cloudinary
-  const thumbnailUpload = await cloudinary.uploader.upload(thumbnailFile.path, {
-    folder: "netflix-clone/thumbnails",
-  });
-
-  // Upload Video to Cloudinary
-  const videoUpload = await cloudinary.uploader.upload(videoFile.path, {
-    resource_type: "video",
-    folder: "netflix-clone/videos",
-  });
-
-  // Create Movie in DB
-  const movie = new Movie({
-    title,
-    description,
-    category,
-    language,
-    genre,
-    thumbnail: thumbnailUpload.secure_url,
-    thumbnailPublicId: thumbnailUpload.public_id,
-    videoUrl: videoUpload.secure_url,
-    videoPublicId: videoUpload.public_id,
-    isTrending: isTrending === "true", // convert string to boolean
-    isFeatured: isFeatured === "true", // convert string to boolean
-  });
-
-  const createdMovie = await movie.save();
-
-  // Remove local temp files
-  fs.unlinkSync(thumbnailFile.path);
-  fs.unlinkSync(videoFile.path);
-
-  res.status(201).json(createdMovie);
-});
-
-// DELETE MOVIE (ADMIN)
-exports.deleteMovie = asyncHandler(async (req, res) => {
   const movie = await Movie.findById(req.params.id);
-  if (!movie) {
+
+  if (movie) {
+    movie.title = title || movie.title;
+    movie.description = description || movie.description;
+    movie.posterUrl = posterUrl || movie.posterUrl;
+    movie.videoUrl = videoUrl || movie.videoUrl;
+    movie.genre = genre || movie.genre;
+    movie.duration = duration || movie.duration;
+    movie.year = year || movie.year;
+    movie.isSeries = isSeries === undefined ? movie.isSeries : isSeries;
+
+    const updatedMovie = await movie.save();
+    res.json(updatedMovie);
+  } else {
     res.status(404);
-    throw new Error("Movie not found");
+    throw new Error('Movie not found');
   }
+});
 
-  // Delete from Cloudinary
-  await cloudinary.uploader.destroy(movie.thumbnailPublicId);
-  await cloudinary.uploader.destroy(movie.videoPublicId, { resource_type: "video" });
+// @desc    Delete a movie
+// @route   DELETE /api/movies/:id
+// @access  Private/Admin
+const deleteMovie = asyncHandler(async (req, res) => {
+  const movie = await Movie.findById(req.params.id);
 
-  await Movie.deleteOne({ _id: req.params.id });
+  if (movie) {
+    await movie.deleteOne();
+    res.json({ message: 'Movie removed' });
+  } else {
+    res.status(404);
+    throw new Error('Movie not found');
+  }
+});
 
-  res.json({ message: "Movie removed" });
+// @desc    Get random featured movie/series for Hero banner
+// @route   GET /api/movies/featured
+// @access  Public
+const getFeaturedMovie = asyncHandler(async (req, res) => {
+    const count = await Movie.countDocuments();
+    const random = Math.floor(Math.random() * count);
+    const featuredMovie = await Movie.findOne().skip(random);
+    res.json(featuredMovie);
 });
 
 
+module.exports = {
+  getMovies,
+  getMovieById,
+  createMovie,
+  updateMovie,
+  deleteMovie,
+  getFeaturedMovie,
+};

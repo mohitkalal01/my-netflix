@@ -1,8 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { PlayIcon, PlusIcon, CheckIcon, HandThumbUpIcon } from "@heroicons/react/24/solid";
 import { useAuth } from "../context/AuthContext";
+import { MouseEvent } from "react";
 
-const MovieCard = ({ movie, progress }) => {
+interface Movie {
+  _id: string;
+  thumbnail: string;
+  title: string;
+}
+
+interface Progress {
+  currentTime: number;
+  duration: number;
+}
+
+interface MovieCardProps {
+  movie: Movie;
+  progress?: Progress;
+}
+
+const MovieCard = ({ movie, progress }: MovieCardProps) => {
   const navigate = useNavigate();
   const { myList, addToMyListContext, removeFromMyListContext } = useAuth();
 
@@ -16,12 +33,12 @@ const MovieCard = ({ movie, progress }) => {
     navigate(`/movies/${movie._id}`);
   };
 
-  const handlePlayClick = (e) => {
+  const handlePlayClick = (e: MouseEvent) => {
     e.stopPropagation();
     navigate(`/watch/${movie._id}`, { state: { resumeTime: progress?.currentTime } });
   };
 
-  const handleMyListToggle = (e) => {
+  const handleMyListToggle = (e: MouseEvent) => {
     e.stopPropagation();
     if (isMovieInList) {
       removeFromMyListContext(movie._id);
@@ -30,7 +47,7 @@ const MovieCard = ({ movie, progress }) => {
     }
   };
 
-  const handleLikeClick = (e) => {
+  const handleLikeClick = (e: MouseEvent) => {
     e.stopPropagation();
     console.log("Like button clicked");
   }

@@ -1,43 +1,24 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {
-  getAllMovies,
+  getMovies,
   getMovieById,
-  getTrendingMovies,
-  getFeaturedMovie,
-  getMoviesByFilter,
-  addMovie,
+  createMovie,
+  updateMovie,
   deleteMovie,
-} = require("../controllers/movieController");
-const {
-  addMovieValidation,
-} = require("../middlewares/validationMiddleware");
+  getFeaturedMovie,
+} = require('../controllers/movieController');
+const { protect, admin } = require('../middlewares/authMiddleware');
 
-const auth = require("../middlewares/authMiddleware");
-const admin = require("../middlewares/adminMiddleware");
+// Public routes
+router.get('/', getMovies);
+router.get('/featured', getFeaturedMovie); // Make sure this is before '/:id'
+router.get('/:id', getMovieById);
 
-// PUBLIC ROUTES
-router.get("/", getAllMovies);
-router.get("/trending", getTrendingMovies);
-router.get("/featured", getFeaturedMovie);
-router.get("/filter", getMoviesByFilter);
-router.get("/:id", getMovieById);
 
-// ADMIN ROUTE
-const upload = require("../middlewares/uploadMiddleware");
-
-router.post(
-  "/",
-  auth,
-  admin,
-  upload.fields([
-    { name: "thumbnail", maxCount: 1 },
-    { name: "video", maxCount: 1 },
-  ]),
-  addMovieValidation,
-  addMovie
-);
-
-router.delete("/:id", auth, admin, deleteMovie);
+// Admin routes
+router.post('/', protect, admin, createMovie);
+router.put('/:id', protect, admin, updateMovie);
+router.delete('/:id', protect, admin, deleteMovie);
 
 module.exports = router;

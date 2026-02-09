@@ -1,55 +1,59 @@
-const User = require("../models/User");
-const WatchHistory = require("../models/WatchHistory");
-const asyncHandler = require("express-async-handler");
+const User = require('../models/User');
+const Movie = require('../models/Movie');
+const WatchHistory = require('../models/WatchHistory');
+const asyncHandler = require('express-async-handler');
 
 // @desc    Get user profile
-// @route   GET /api/users/me
+// @route   GET /api/users/profile
 // @access  Private
-exports.getMe = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select("-password");
-  res.json(user);
-});
+const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
 
-// @desc    Update watch progress
-// @route   POST /api/users/watch-progress
-// @access  Private
-exports.updateWatchProgress = asyncHandler(async (req, res) => {
-  const { movieId, progress, duration } = req.body;
-  const userId = req.user.id;
-
-  if (progress / duration >= 0.95) {
-    await WatchHistory.findOneAndDelete({ user: userId, movie: movieId });
-    res.status(200).json({ message: "Movie finished and removed from history" });
+  if (user) {
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
   } else {
-    const history = await WatchHistory.findOneAndUpdate(
-      { user: userId, movie: movieId },
-      { progress, duration },
-      { new: true, upsert: true }
-    );
-    res.status(200).json(history);
+    res.status(404);
+    throw new Error('User not found');
   }
 });
 
-// @desc    Get continue watching list
-// @route   GET /api/users/continue-watching
+// @desc    Update user profile
+// @route   PUT /api/users/profile
 // @access  Private
-exports.getContinueWatching = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-  const history = await WatchHistory.find({ user: userId })
-    .populate("movie")
-    .sort({ updatedAt: -1 });
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
 
-  res.json(history);
+  if (user) {
+    user.username = req.body.username || user.username;
+    user.email = req.body.email || user.email;
+    if (req.body.password) {
+      user.password = req.body.password;
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      isAdmin: updatedUser.isAdmin,
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
 });
 
 // @desc    Get user's list
-// @route   GET /api/users/my-list
+// @route   GET /api/users/mylist
 // @access  Private
-exports.getMyList = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user.id).populate({
-    path: 'myList',
-    model: 'Movie'
-  });
+const getMyList = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).populate('myList');
   if (user) {
     res.json(user.myList);
   } else {
@@ -59,47 +63,80 @@ exports.getMyList = asyncHandler(async (req, res) => {
 });
 
 // @desc    Add movie to user's list
-// @route   POST /api/users/my-list
+// @route   POST /api/users/mylist
 // @access  Private
-exports.addToMyList = asyncHandler(async (req, res) => {
+const addToMyList = asyncHandler(async (req, res) => {
   const { movieId } = req.body;
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user._id);
+  const movie = await Movie.findById(movieId);
 
-  if (user.myList.includes(movieId)) {
-    res.status(400);
-    throw new Error("Movie already in list");
+  if (user && movie) {
+    if (user.myList.includes(movieId)) {
+      res.status(400);
+      throw new Error('Movie already in list');
+    }
+    user.myList.push(movieId);
+    await user.save();
+    res.status(201).json({ message: 'Movie added to list' });
+  } else {
+    res.status(404);
+    throw new Error('User or Movie not found');
   }
-
-  user.myList.push(movieId);
-  await user.save();
-  
-  const updatedUser = await User.findById(req.user.id).populate({
-    path: 'myList',
-    model: 'Movie'
-  });
-
-  res.status(201).json(updatedUser.myList);
 });
 
 // @desc    Remove movie from user's list
-// @route   DELETE /api/users/my-list/:movieId
+// @route   DELETE /api/users/mylist/:movieId
 // @access  Private
-exports.removeFromMyList = asyncHandler(async (req, res) => {
+const removeFromMyList = asyncHandler(async (req, res) => {
   const { movieId } = req.params;
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user._id);
 
-  if (!user.myList.includes(movieId)) {
-    res.status(400);
-    throw new Error("Movie not in list");
+  if (user) {
+    user.myList = user.myList.filter((id) => id.toString() !== movieId);
+    await user.save();
+    res.json({ message: 'Movie removed from list' });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
   }
-
-  user.myList = user.myList.filter((id) => id.toString() !== movieId);
-  await user.save();
-  
-  const updatedUser = await User.findById(req.user.id).populate({
-    path: 'myList',
-    model: 'Movie'
-  });
-
-  res.json(updatedUser.myList);
 });
+
+// @desc    Get user's watch history (Continue Watching)
+// @route   GET /api/users/watch-history
+// @access  Private
+const getWatchHistory = asyncHandler(async (req, res) => {
+  const history = await WatchHistory.find({ user: req.user._id })
+    .sort({ watchedAt: -1 })
+    .populate('movie')
+    .limit(10); // Get latest 10 watched items
+
+  res.json(history.map(item => item.movie)); // Return only the movie details
+});
+
+
+// @desc    Add to or update watch history
+// @route   POST /api/users/watch-history
+// @access  Private
+const updateWatchHistory = asyncHandler(async (req, res) => {
+    const { movieId } = req.body;
+    
+    // Use findOneAndUpdate with upsert to create or update the history entry
+    const historyEntry = await WatchHistory.findOneAndUpdate(
+        { user: req.user._id, movie: movieId },
+        { watchedAt: Date.now() }, // Update the timestamp
+        { new: true, upsert: true } // Return the new/updated doc, and create if it doesn't exist
+    );
+
+    res.status(201).json(historyEntry);
+});
+
+
+module.exports = {
+  getUserProfile,
+  updateUserProfile,
+  getMyList,
+  addToMyList,
+  removeFromMyList,
+  getWatchHistory,
+  updateWatchHistory,
+};

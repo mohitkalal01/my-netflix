@@ -1,4 +1,6 @@
-const AuthLayout = ({ children }) => {
+import { ReactNode } from "react";
+
+const AuthLayout = ({ children }: { children: ReactNode }) => {
     return (
       <div className="relative min-h-screen flex items-center justify-center bg-brand-black">
         <div className="absolute inset-0 w-full h-full bg-cover bg-center" style={{ backgroundImage: "url('/images/auth-bg.jpg')" }}>

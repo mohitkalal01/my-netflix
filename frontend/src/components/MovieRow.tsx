@@ -1,9 +1,21 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ReactNode } from "react";
 import MovieCard from "./MovieCard";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
-const MovieRow = ({ title, movies = [] }) => {
-  const rowRef = useRef(null);
+interface Movie {
+  _id: string;
+  movie?: Movie;
+  progress?: number;
+}
+
+interface MovieRowProps {
+  title: string;
+  movies: Movie[];
+  isContinueWatching?: boolean;
+}
+
+const MovieRow = ({ title, movies = [], isContinueWatching = false }: MovieRowProps) => {
+  const rowRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
 
@@ -15,7 +27,7 @@ const MovieRow = ({ title, movies = [] }) => {
     }
   };
 
-  const scroll = (direction) => {
+  const scroll = (direction: "left" | "right") => {
     if (rowRef.current) {
       const { clientWidth } = rowRef.current;
       // Scroll by 80% of the container width for a smoother, partial scroll
@@ -96,5 +108,16 @@ const MovieRow = ({ title, movies = [] }) => {
     </div>
   );
 };
+
+export const SkeletonRow = () => (
+  <div className="my-8">
+    <div className="h-8 w-48 bg-gray-800 rounded mb-4 animate-pulse"></div>
+    <div className="flex space-x-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="w-64 h-36 bg-gray-800 rounded animate-pulse"></div>
+      ))}
+    </div>
+  </div>
+);
 
 export default MovieRow;

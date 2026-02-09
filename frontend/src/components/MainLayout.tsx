@@ -1,8 +1,9 @@
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 import { AnimatePresence } from "framer-motion";
+import { ReactNode } from "react";
 
-const MainLayout = ({ children }) => {
+const MainLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="bg-brand-black min-h-screen flex flex-col">
       <Navbar />

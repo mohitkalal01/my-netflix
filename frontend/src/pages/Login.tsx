@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import AuthContext from '../context/AuthContext';
@@ -14,11 +14,11 @@ const Login = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -26,7 +26,7 @@ const Login = () => {
       const { data } = await api.post('/auth/login', formData);
       login(data.token);
       navigate('/');
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ const Login = () => {
           value={formData.password}
           onChange={handleChange}
         />
-        <Button type="submit" disabled={loading} fullWidth>
+        <Button type="submit" onClick={() => {}} disabled={loading} fullWidth>
           {loading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>

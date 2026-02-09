@@ -1,21 +1,31 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {
-  getMe,
-  updateWatchProgress,
-  getContinueWatching,
+  getUserProfile,
+  updateUserProfile,
   getMyList,
   addToMyList,
   removeFromMyList,
-} = require("../controllers/userController");
-const authMiddleware = require("../middlewares/authMiddleware");
+  getWatchHistory,
+  updateWatchHistory,
+} = require('../controllers/userController');
+const { protect } = require('../middlewares/authMiddleware');
 
-router.get("/me", authMiddleware, getMe);
-router.post("/watch-progress", authMiddleware, updateWatchProgress);
-router.get("/continue-watching", authMiddleware, getContinueWatching);
+// All these routes are protected
+router.use(protect);
 
-router.route("/my-list").get(authMiddleware, getMyList).post(authMiddleware, addToMyList);
-router.delete("/my-list/:movieId", authMiddleware, removeFromMyList);
+router.route('/profile')
+  .get(getUserProfile)
+  .put(updateUserProfile);
+
+router.route('/mylist')
+  .get(getMyList)
+  .post(addToMyList);
+
+router.delete('/mylist/:movieId', removeFromMyList);
+
+router.route('/watch-history')
+    .get(getWatchHistory)
+    .post(updateWatchHistory);
 
 module.exports = router;
-

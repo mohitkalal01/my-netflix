@@ -1,19 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import api from '../services/api';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import ErrorState from '../components/ErrorState';
 
+interface IMovie {
+    _id: string;
+    title: string;
+    description: string;
+    category: string;
+    language: string;
+    genre: string;
+    thumbnail: File | null;
+    video: File | null;
+}
+
 const Admin = () => {
-    const [movies, setMovies] = useState([]);
+    const [movies, setMovies] = useState<IMovie[]>([]);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         category: 'bollywood',
         language: 'hindi',
         genre: '',
-        thumbnail: null,
-        video: null,
+        thumbnail: null as File | null,
+        video: null as File | null,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -30,22 +41,24 @@ const Admin = () => {
         fetchMovies();
     }, []);
 
-    const handleChange = (e) => {
-        const { name, value, files } = e.target;
-        if (files) {
-            setFormData({ ...formData, [name]: files[0] });
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        if (e.target instanceof HTMLInputElement && e.target.files) {
+            setFormData({ ...formData, [name]: e.target.files[0] });
         } else {
             setFormData({ ...formData, [name]: value });
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         const movieData = new FormData();
         for (const key in formData) {
-            movieData.append(key, formData[key]);
+            if (formData[key as keyof typeof formData]) {
+                movieData.append(key, formData[key as keyof typeof formData] as any);
+            }
         }
 
         try {
@@ -66,14 +79,14 @@ const Admin = () => {
             });
             const { data } = await api.get('/movies');
             setMovies(data);
-        } catch (err) {
+        } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to add movie');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = async (id: string) => {
         try {
             await api.delete(`/movies/${id}`);
             setMovies(movies.filter((movie) => movie._id !== id));
@@ -103,7 +116,7 @@ const Admin = () => {
                             <option value="english">English</option>
                         </select>
                     </div>
-                    <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-brand-red" rows="3" required />
+                    <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-brand-red" rows={3} required />
                     <div>
                         <label className="block text-sm font-medium text-gray-300">Thumbnail</label>
                         <input type="file" name="thumbnail" onChange={handleChange} className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-red file:text-white hover:file:bg-red-700" required/>
@@ -112,7 +125,7 @@ const Admin = () => {
                         <label className="block text-sm font-medium text-gray-300">Video</label>
                         <input type="file" name="video" onChange={handleChange} className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-red file:text-white hover:file:bg-red-700" required/>
                     </div>
-                    <Button type="submit" disabled={loading} fullWidth>
+                    <Button type="submit" onClick={() => {}} disabled={loading} fullWidth>
                         {loading ? 'Adding...' : 'Add Title'}
                     </Button>
                 </form>

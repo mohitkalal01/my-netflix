@@ -8,8 +8,18 @@ import ErrorState from '../components/ErrorState';
 import useFetch from '../hooks/useFetch';
 import AuthContext from '../context/AuthContext';
 
+interface IMovie {
+  _id: string;
+  title: string;
+  description: string;
+  category: string;
+  language: string;
+  isSeries: boolean;
+  // Add other movie properties here
+}
+
 const Home = () => {
-  const { data: movies, loading, error } = useFetch(getAllMovies);
+  const { data: movies, loading, error } = useFetch<IMovie[]>(getAllMovies);
   const { user } = useContext(AuthContext);
 
   const {

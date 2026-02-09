@@ -1,4 +1,15 @@
-const Button = ({ children, onClick, type = 'button', disabled = false, fullWidth = false, variant = 'primary' }) => {
+import { ReactNode } from "react";
+
+interface ButtonProps {
+  children: ReactNode;
+  onClick: () => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  fullWidth?: boolean;
+  variant?: "primary" | "secondary";
+}
+
+const Button = ({ children, onClick, type = 'button', disabled = false, fullWidth = false, variant = 'primary' }: ButtonProps) => {
     const baseClasses = `py-3 px-6 font-bold rounded transition-colors disabled:opacity-50`;
   
     const variants = {

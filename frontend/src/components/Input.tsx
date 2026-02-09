@@ -1,4 +1,15 @@
-const Input = ({ type = 'text', name, placeholder, value, onChange, required = false }) => {
+import { ChangeEvent } from "react";
+
+interface InputProps {
+  type?: string;
+  name: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+}
+
+const Input = ({ type = 'text', name, placeholder, value, onChange, required = false }: InputProps) => {
     return (
       <input
         type={type}

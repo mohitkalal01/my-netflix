@@ -3,7 +3,20 @@ import Button from './Button';
 import { SkeletonHero } from './Loader';
 import { Link } from 'react-router-dom';
 
-const Hero = ({ movie }) => {
+interface Movie {
+    _id: string;
+    backdrop_path: string;
+    thumbnail: string;
+    title: string;
+    overview: string;
+    description: string;
+}
+
+interface HeroProps {
+    movie: Movie | null;
+}
+
+const Hero = ({ movie }: HeroProps) => {
   if (!movie) {
     return <SkeletonHero />;
   }
@@ -34,9 +47,9 @@ const Hero = ({ movie }) => {
           </p>
           <div className="mt-8 flex space-x-4">
             <Link to={`/watch/${movie._id}`}>
-                <Button>Play</Button>
+                <Button onClick={() => {}}>Play</Button>
             </Link>
-            <Button variant="secondary">More Info</Button>
+            <Button onClick={() => {}} variant="secondary">More Info</Button>
           </div>
         </motion.div>
       </div>

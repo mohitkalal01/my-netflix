@@ -1,52 +1,78 @@
-const User = require("../models/User");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const asyncHandler = require("express-async-handler");
+const User = require('../models/User');
+const generateToken = require('../utils/generateToken');
+const asyncHandler = require('express-async-handler');
 
-exports.register = asyncHandler(async (req, res) => {
+// @desc    Register a new user
+// @route   POST /api/auth/register
+// @access  Public
+const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
-  const exist = await User.findOne({ email });
-  if (exist) {
+  const userExists = await User.findOne({ email });
+
+  if (userExists) {
     res.status(400);
-    throw new Error("User already exists");
+    throw new Error('User already exists');
   }
 
-  const user = await User.create({ username, email, password });
+  const user = await User.create({
+    username,
+    email,
+    password,
+  });
 
   if (user) {
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
-    res.status(201).json({ token, user: { id: user._id, username: user.username } });
+    generateToken(res, user._id);
+    res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      myList: user.myList,
+    });
   } else {
     res.status(400);
-    throw new Error("Invalid user data");
+    throw new Error('Invalid user data');
   }
 });
 
-exports.login = asyncHandler(async (req, res) => {
-  console.log("Login request body:", req.body);
+// @desc    Auth user & get token
+// @route   POST /api/auth/login
+// @access  Public
+const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password");
-  if (!user) {
-    res.status(400);
-    throw new Error("Invalid credentials");
-  }
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) {
-    res.status(400);
-    throw new Error("Invalid credentials");
-  }
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  );
+  const user = await User.findOne({ email });
 
-  res.json({ token, user: { id: user._id, username: user.username } });
+  if (user && (await user.matchPassword(password))) {
+    generateToken(res, user._id);
+    res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      myList: user.myList,
+    });
+  } else {
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
 });
 
+// @desc    Logout user / clear cookie
+// @route   POST /api/auth/logout
+// @access  Private
+const logoutUser = asyncHandler(async (req, res) => {
+  res.cookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+});
+
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+};

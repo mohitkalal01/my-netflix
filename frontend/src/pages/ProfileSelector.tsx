@@ -3,7 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../context/ProfileContext';
 
-const profiles = [
+interface IProfile {
+  id: string;
+  name: string;
+  avatar: string;
+}
+
+const profiles: IProfile[] = [
   { id: '1', name: 'User 1', avatar: 'https://occ-0-2794-2795.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHNpc/AAAABTYctxxbe-UkKEdxahlXjZDL7OvUjNCpQxRsrkosmFwCGNWQt individually for example' },
   { id: '2', name: 'User 2', avatar: 'https://occ-0-2794-2795.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHNpc/AAAABbS7Yj3S40aT8oN3j-xT10_N-Q46pW_M0l3f0s_V7d2Q-g-t4N0t_U0e-fT1-w-x-R-z-y-0.png?r=a7f' },
   { id: '3', name: 'Kids', avatar: 'https://occ-0-2794-2795.1.nflxso.net/dnm/api/v6/K6hjPJd6cR6FpVELC5Pd6ovHNpc/AAAABZgq7j2W2-jQ2q-v3Q2r-2Q-x-2Q-y-2Q-z-2Q-w-2Q-a-2Q-b-2Q-c-2Q-d-2Q-e-2Q-f-2Q-g-2Q-h-2Q-i-2Q-j-2Q-k-2Q-l-2Q-m-2Q-n-2Q-o-2Q-p-2Q-q-2Q-r-2Q-s-2Q-t-2Q-u-2Q-v-2Q-w-2Q-x-2Q-y-2Q-z-2Q.png?r=0a6' },
@@ -19,7 +25,7 @@ const ProfileSelector = () => {
     }
   }, [selectedProfile, navigate]);
 
-  const handleProfileSelect = (profile) => {
+  const handleProfileSelect = (profile: IProfile) => {
     selectProfile(profile);
     navigate('/'); // Navigate to home after selecting a profile
   };

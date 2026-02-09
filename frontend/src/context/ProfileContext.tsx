@@ -1,9 +1,26 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 
-const ProfileContext = createContext();
+interface IProfile {
+  // Define the properties of a profile
+  id: string;
+  name: string;
+  avatar: string;
+}
 
-export const ProfileProvider = ({ children }) => {
-  const [selectedProfile, setSelectedProfile] = useState(() => {
+interface ProfileContextType {
+  selectedProfile: IProfile | null;
+  selectProfile: (profile: IProfile) => void;
+  clearSelectedProfile: () => void;
+}
+
+const ProfileContext = createContext<ProfileContextType>({
+  selectedProfile: null,
+  selectProfile: () => {},
+  clearSelectedProfile: () => {},
+});
+
+export const ProfileProvider = ({ children }: { children: ReactNode }) => {
+  const [selectedProfile, setSelectedProfile] = useState<IProfile | null>(() => {
     // Initialize from localStorage, if available
     const storedProfile = localStorage.getItem('selectedProfile');
     return storedProfile ? JSON.parse(storedProfile) : null;
@@ -18,7 +35,7 @@ export const ProfileProvider = ({ children }) => {
     }
   }, [selectedProfile]);
 
-  const selectProfile = (profile) => {
+  const selectProfile = (profile: IProfile) => {
     setSelectedProfile(profile);
   };
 

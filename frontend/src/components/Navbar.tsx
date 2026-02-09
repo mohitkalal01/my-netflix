@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef, useCallback } from 'react';
+import { useState, useEffect, useContext, useRef, useCallback, ChangeEvent } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthContext from '../context/AuthContext';
@@ -14,7 +14,7 @@ const Navbar = () => {
 
   // Debounced search handler
   const debouncedSearch = useCallback(
-    debounce((query) => {
+    debounce((query: string) => {
       if (query.trim()) {
         navigate(`/search?q=${encodeURIComponent(query.trim())}`);
       } else {
@@ -24,7 +24,7 @@ const Navbar = () => {
     [navigate]
   );
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
     debouncedSearch(query);

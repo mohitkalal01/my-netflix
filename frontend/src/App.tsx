@@ -24,7 +24,11 @@ import SearchResults from "./pages/SearchResults";
 import ProfileSelector from "./pages/ProfileSelector"; // Import ProfileSelector
 
 
-const PageWrapper = ({ children }) => (
+import { ReactNode } from "react";
+
+// ...
+
+const PageWrapper = ({ children }: { children: ReactNode }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -34,6 +38,7 @@ const PageWrapper = ({ children }) => (
     {children}
   </motion.div>
 );
+
 
 export default function App() {
   const { user, loading } = useContext(AuthContext);

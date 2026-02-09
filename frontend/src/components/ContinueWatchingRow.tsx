@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getContinueWatching } from '../services/userApi';
-import MovieRow from './MovieRow';
+import MovieRow, { SkeletonRow } from './MovieRow';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from './Loader';
 
@@ -20,7 +20,7 @@ const ContinueWatchingRow = () => {
         const data = await getContinueWatching();
         // The API returns objects with `movie` and `watched` properties.
         // We need to pass the movie data and the progress to the MovieCard.
-        const moviesWithProgress = data.map(item => ({
+        const moviesWithProgress = data.map((item: any) => ({
           ...item.movie, // Spread the movie details (title, thumbnail, etc.)
           progress: item.watched, // Add the progress object { currentTime, duration }
         }));

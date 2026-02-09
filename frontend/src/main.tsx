@@ -7,7 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ProfileProvider } from "./context/ProfileContext"; // Import ProfileProvider
 import "./index.css";
 
-ReactDOM.createRoot(document.getElementById("root")).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AuthProvider>
       <ProfileProvider> {/* Wrap App with ProfileProvider */}

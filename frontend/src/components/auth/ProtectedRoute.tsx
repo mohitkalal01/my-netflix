@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom"; // Import useLocation
 import AuthContext from "../../context/AuthContext";
 import { useProfile } from "../../context/ProfileContext"; // Import useProfile
@@ -9,7 +9,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
-export const ProtectedRoute = ({ children }) => {
+export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useContext(AuthContext);
   const { selectedProfile } = useProfile(); // Get selectedProfile
   const location = useLocation(); // Get current location
@@ -28,10 +28,10 @@ export const ProtectedRoute = ({ children }) => {
     return <Navigate to="/profiles" replace />;
   }
 
-  return children;
+  return <>{children}</>;
 };
 
-export const AdminRoute = ({ children }) => {
+export const AdminRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) {
@@ -39,7 +39,7 @@ export const AdminRoute = ({ children }) => {
   }
 
   return user && user.role === "admin" ? (
-    children
+    <>{children}</>
   ) : (
     <Navigate to="/" replace />
   );

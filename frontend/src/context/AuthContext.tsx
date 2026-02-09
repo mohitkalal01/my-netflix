@@ -1,13 +1,48 @@
-import { createContext, useState, useEffect, useCallback, useContext } from "react";
+import { createContext, useState, useEffect, useCallback, useContext, ReactNode } from "react";
 import api from "../services/api";
 import { getMyList, addToMyList, removeFromMyList } from "../services/userApi";
 
-const AuthContext = createContext();
+interface IUser {
+  id: string;
+  username: string;
+  role: string;
+  email: string;
+  isAdmin: boolean;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
-  const [myList, setMyList] = useState([]);
+interface IMovie {
+  _id: string;
+  thumbnail: string;
+  title: string;
+  // Add other movie properties here
+}
+
+interface AuthContextType {
+  user: IUser | null;
+  token: string | null;
+  login: (newToken: string) => void;
+  logout: () => void;
+  loading: boolean;
+  myList: IMovie[];
+  addToMyListContext: (movie: IMovie) => void;
+  removeFromMyListContext: (movieId: string) => void;
+}
+
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  token: null,
+  login: () => {},
+  logout: () => {},
+  loading: true,
+  myList: [],
+  addToMyListContext: () => {},
+  removeFromMyListContext: () => {},
+});
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<IUser | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [myList, setMyList] = useState<IMovie[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = useCallback(async () => {
@@ -30,7 +65,7 @@ export const AuthProvider = ({ children }) => {
     fetchUserData();
   }, [fetchUserData]);
 
-  const login = (newToken) => {
+  const login = (newToken: string) => {
     localStorage.setItem("token", newToken);
     setToken(newToken);
   };
@@ -42,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     setMyList([]);
   };
 
-  const addToMyListContext = async (movie) => {
+  const addToMyListContext = async (movie: IMovie) => {
     // Optimistic update using the full movie object
     setMyList(prevList => [...prevList, movie]);
 
@@ -57,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const removeFromMyListContext = async (movieId) => {
+  const removeFromMyListContext = async (movieId: string) => {
     const originalList = [...myList];
     
     // Optimistic update
