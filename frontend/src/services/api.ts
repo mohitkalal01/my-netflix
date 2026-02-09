@@ -2,6 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true, // Enable cookies for cross-origin requests
 });
 
 // Attach token automatically
@@ -14,5 +15,6 @@ api.interceptors.request.use((config) => {
 });
 
 export default api;
+
 
 

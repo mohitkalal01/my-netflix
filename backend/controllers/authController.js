@@ -22,13 +22,14 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    generateToken(res, user._id);
+    const token = generateToken(res, user._id);
     res.status(201).json({
       _id: user._id,
       username: user.username,
       email: user.email,
       isAdmin: user.isAdmin,
       myList: user.myList,
+      token, // Include token in response for frontend localStorage
     });
   } else {
     res.status(400);
@@ -45,13 +46,14 @@ const loginUser = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
-    generateToken(res, user._id);
+    const token = generateToken(res, user._id);
     res.status(200).json({
       _id: user._id,
       username: user.username,
       email: user.email,
       isAdmin: user.isAdmin,
       myList: user.myList,
+      token, // Include token in response for frontend localStorage
     });
   } else {
     res.status(401);

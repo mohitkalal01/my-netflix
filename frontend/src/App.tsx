@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, lazy, Suspense } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import AuthContext from "./context/AuthContext";
 import {
@@ -8,25 +8,28 @@ import {
 } from "./components/auth/ProtectedRoute";
 import MainLayout from "./components/MainLayout";
 import { Spinner } from "./components/Loader";
-
-// Page imports
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Admin from "./pages/Admin";
-import Watch from "./pages/Watch";
-import TvShows from "./pages/TvShows";
-import Movies from "./pages/Movies";
-import MovieDetail from "./pages/MovieDetail";
-import MyList from "./pages/MyList";
-import Profile from "./pages/Profile";
-import SearchResults from "./pages/SearchResults";
-import ProfileSelector from "./pages/ProfileSelector"; // Import ProfileSelector
-
-
 import { ReactNode } from "react";
 
-// ...
+// Lazy load pages for code splitting
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Watch = lazy(() => import("./pages/Watch"));
+const TvShows = lazy(() => import("./pages/TvShows"));
+const Movies = lazy(() => import("./pages/Movies"));
+const MovieDetail = lazy(() => import("./pages/MovieDetail"));
+const MyList = lazy(() => import("./pages/MyList"));
+const Profile = lazy(() => import("./pages/Profile"));
+const SearchResults = lazy(() => import("./pages/SearchResults"));
+const ProfileSelector = lazy(() => import("./pages/ProfileSelector"));
+
+// Page loading fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[50vh] bg-brand-black">
+    <Spinner />
+  </div>
+);
 
 const PageWrapper = ({ children }: { children: ReactNode }) => (
   <motion.div
@@ -35,10 +38,11 @@ const PageWrapper = ({ children }: { children: ReactNode }) => (
     exit={{ opacity: 0, y: -20 }}
     transition={{ duration: 0.3 }}
   >
-    {children}
+    <Suspense fallback={<PageLoader />}>
+      {children}
+    </Suspense>
   </motion.div>
 );
-
 
 export default function App() {
   const { user, loading } = useContext(AuthContext);
@@ -108,9 +112,9 @@ export default function App() {
         <Route
           path="/search"
           element={
-            <MainLayout>
+            <ProtectedRoute>
               <PageWrapper><SearchResults /></PageWrapper>
-            </MainLayout>
+            </ProtectedRoute>
           }
         />
         <Route
@@ -159,5 +163,3 @@ export default function App() {
     </AnimatePresence>
   );
 }
-
-

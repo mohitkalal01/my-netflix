@@ -77,7 +77,10 @@ const addToMyList = asyncHandler(async (req, res) => {
     }
     user.myList.push(movieId);
     await user.save();
-    res.status(201).json({ message: 'Movie added to list' });
+
+    // Return the updated populated list
+    const updatedUser = await User.findById(req.user._id).populate('myList');
+    res.status(201).json(updatedUser.myList);
   } else {
     res.status(404);
     throw new Error('User or Movie not found');
@@ -94,7 +97,10 @@ const removeFromMyList = asyncHandler(async (req, res) => {
   if (user) {
     user.myList = user.myList.filter((id) => id.toString() !== movieId);
     await user.save();
-    res.json({ message: 'Movie removed from list' });
+
+    // Return the updated populated list
+    const updatedUser = await User.findById(req.user._id).populate('myList');
+    res.json(updatedUser.myList);
   } else {
     res.status(404);
     throw new Error('User not found');
@@ -118,16 +124,16 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 // @route   POST /api/users/watch-history
 // @access  Private
 const updateWatchHistory = asyncHandler(async (req, res) => {
-    const { movieId } = req.body;
-    
-    // Use findOneAndUpdate with upsert to create or update the history entry
-    const historyEntry = await WatchHistory.findOneAndUpdate(
-        { user: req.user._id, movie: movieId },
-        { watchedAt: Date.now() }, // Update the timestamp
-        { new: true, upsert: true } // Return the new/updated doc, and create if it doesn't exist
-    );
+  const { movieId } = req.body;
 
-    res.status(201).json(historyEntry);
+  // Use findOneAndUpdate with upsert to create or update the history entry
+  const historyEntry = await WatchHistory.findOneAndUpdate(
+    { user: req.user._id, movie: movieId },
+    { watchedAt: Date.now() }, // Update the timestamp
+    { new: true, upsert: true } // Return the new/updated doc, and create if it doesn't exist
+  );
+
+  res.status(201).json(historyEntry);
 });
 
 

@@ -24,6 +24,7 @@ const Login = () => {
     setError('');
     try {
       const { data } = await api.post('/auth/login', formData);
+      console.log(data);
       login(data.token);
       navigate('/');
     } catch (err: any) {
@@ -56,7 +57,7 @@ const Login = () => {
           value={formData.password}
           onChange={handleChange}
         />
-        <Button type="submit" onClick={() => {}} disabled={loading} fullWidth>
+        <Button type="submit" disabled={loading} fullWidth>
           {loading ? 'Signing In...' : 'Sign In'}
         </Button>
       </form>

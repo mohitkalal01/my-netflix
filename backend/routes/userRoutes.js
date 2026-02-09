@@ -14,6 +14,8 @@ const { protect } = require('../middlewares/authMiddleware');
 // All these routes are protected
 router.use(protect);
 
+// User profile routes
+router.get('/me', getUserProfile); // For AuthContext to fetch current user
 router.route('/profile')
   .get(getUserProfile)
   .put(updateUserProfile);
@@ -25,7 +27,7 @@ router.route('/mylist')
 router.delete('/mylist/:movieId', removeFromMyList);
 
 router.route('/watch-history')
-    .get(getWatchHistory)
-    .post(updateWatchHistory);
+  .get(getWatchHistory)
+  .post(updateWatchHistory);
 
 module.exports = router;

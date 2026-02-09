@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, ChangeEvent, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import AuthContext from '../context/AuthContext';
@@ -18,11 +18,11 @@ const Register = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -30,7 +30,7 @@ const Register = () => {
       const { data } = await api.post('/auth/register', formData);
       login(data.token);
       navigate('/');
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
       setLoading(false);

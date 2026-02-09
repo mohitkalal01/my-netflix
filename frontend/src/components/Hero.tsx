@@ -1,19 +1,20 @@
 import { motion } from 'framer-motion';
-import Button from './Button';
-import { SkeletonHero } from './Loader';
 import { Link } from 'react-router-dom';
+import { PlayIcon, InformationCircleIcon } from '@heroicons/react/24/solid';
+import { SkeletonHero } from './Loader';
 
 interface Movie {
-    _id: string;
-    backdrop_path: string;
-    thumbnail: string;
-    title: string;
-    overview: string;
-    description: string;
+  _id: string;
+  backdrop_path?: string;
+  thumbnail?: string;
+  posterUrl?: string;
+  title: string;
+  overview?: string;
+  description?: string;
 }
 
 interface HeroProps {
-    movie: Movie | null;
+  movie: Movie | null;
 }
 
 const Hero = ({ movie }: HeroProps) => {
@@ -21,37 +22,72 @@ const Hero = ({ movie }: HeroProps) => {
     return <SkeletonHero />;
   }
 
+  const backgroundImage = movie.backdrop_path || movie.thumbnail || movie.posterUrl;
+  const description = movie.overview || movie.description || '';
+
   return (
-    <div className="relative h-[56.25vw] min-h-[400px] max-h-[800px]">
-      <div className="absolute top-0 left-0 w-full h-full">
+    <div className="relative h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[80vh] min-h-[400px] max-h-[900px]">
+      {/* Background Image */}
+      <div className="absolute inset-0">
         <img
-          src={movie.backdrop_path || movie.thumbnail}
+          src={backgroundImage}
           alt={movie.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
+          loading="eager"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-black via-transparent to-transparent" />
+        {/* Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-black/80 via-brand-black/20 to-transparent" />
       </div>
-      <div className="relative z-10 flex flex-col justify-center h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-xl"
-        >
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white">
-            {movie.title}
-          </h1>
-          <p className="mt-4 text-lg text-gray-300 line-clamp-3">
-            {movie.overview || movie.description}
-          </p>
-          <div className="mt-8 flex space-x-4">
-            <Link to={`/watch/${movie._id}`}>
-                <Button onClick={() => {}}>Play</Button>
-            </Link>
-            <Button onClick={() => {}} variant="secondary">More Info</Button>
-          </div>
-        </motion.div>
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col justify-end h-full pb-16 md:pb-20 lg:pb-24">
+        <div className="container-mobile max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-lg lg:max-w-xl"
+          >
+            {/* Title - Responsive sizing */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight">
+              {movie.title}
+            </h1>
+
+            {/* Description - Hidden on very small screens */}
+            {description && (
+              <p className="hidden sm:block mt-3 md:mt-4 text-sm md:text-base lg:text-lg text-gray-300 line-clamp-2 md:line-clamp-3">
+                {description}
+              </p>
+            )}
+
+            {/* Action Buttons */}
+            <div className="mt-4 md:mt-6 lg:mt-8 flex flex-row gap-2 sm:gap-3 md:gap-4">
+              <Link
+                to={`/watch/${movie._id}`}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black font-semibold 
+                  px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded 
+                  text-sm sm:text-base
+                  hover:bg-gray-200 transition-colors touch-target"
+              >
+                <PlayIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span>Play</span>
+              </Link>
+
+              <Link
+                to={`/movies/${movie._id}`}
+                className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gray-500/70 text-white font-semibold 
+                  px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded 
+                  text-sm sm:text-base
+                  hover:bg-gray-500/90 transition-colors touch-target"
+              >
+                <InformationCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <span className="hidden xs:inline">More Info</span>
+                <span className="xs:hidden">Info</span>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

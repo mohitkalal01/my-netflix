@@ -38,7 +38,7 @@ export const AdminRoute = ({ children }: { children: ReactNode }) => {
     return <LoadingSpinner />;
   }
 
-  return user && user.role === "admin" ? (
+  return user && user.isAdmin ? (
     <>{children}</>
   ) : (
     <Navigate to="/" replace />
